@@ -1,0 +1,3284 @@
+<!DOCTYPE html>
+<html lang="ru">
+
+<head>
+
+<meta charset="UTF-8">
+
+<meta name="viewport"
+content="width=device-width,
+initial-scale=1,
+maximum-scale=1,
+user-scalable=no,
+viewport-fit=cover">
+
+<title>Organic Particle Face</title>
+
+<style>
+
+*{
+    box-sizing:border-box;
+    -webkit-tap-highlight-color:transparent;
+}
+
+html,
+body{
+
+    margin:0;
+    padding:0;
+
+    width:100%;
+    height:100%;
+
+    overflow:hidden;
+
+    background:#000;
+
+    touch-action:none;
+
+    font-family:
+        -apple-system,
+        BlinkMacSystemFont,
+        "Segoe UI",
+        sans-serif;
+}
+
+#app{
+
+    position:fixed;
+
+    inset:0;
+
+    background:#000;
+
+    overflow:hidden;
+}
+
+canvas{
+
+    position:absolute;
+
+    inset:0;
+
+    width:100%;
+    height:100%;
+
+    display:block;
+
+    touch-action:none;
+}
+
+/* ============================= */
+/* SPLASH SCREEN                 */
+/* ============================= */
+
+#splash{
+
+    position:fixed;
+
+    inset:0;
+
+    z-index:100;
+
+    background:#000;
+
+    display:flex;
+
+    flex-direction:column;
+
+    align-items:center;
+
+    justify-content:center;
+
+    cursor:pointer;
+
+    transition:
+        opacity .8s ease,
+        visibility .8s;
+}
+
+#splash.hidden{
+
+    opacity:0;
+
+    visibility:hidden;
+
+    pointer-events:none;
+}
+
+#splashTitle{
+
+    color:
+        rgba(255,130,200,.85);
+
+    font-family:
+        monospace;
+
+    font-size:
+        clamp(
+            22px,
+            5vw,
+            38px
+        );
+
+    letter-spacing:3px;
+
+    text-align:center;
+
+    padding:0 20px;
+
+    text-shadow:
+        0 0 20px
+        rgba(255,80,180,.4),
+        0 0 40px
+        rgba(255,80,180,.2);
+
+    animation:
+        splashGlow 3s ease-in-out infinite;
+
+    margin-bottom:40px;
+}
+
+#splashSubtitle{
+
+    color:
+        rgba(255,150,210,.55);
+
+    font-family:
+        monospace;
+
+    font-size:
+        clamp(
+            11px,
+            2.5vw,
+            14px
+        );
+
+    letter-spacing:2px;
+
+    text-align:center;
+
+    padding:0 20px;
+
+    animation:
+        splashPulse 2s ease-in-out infinite;
+}
+
+@keyframes splashGlow{
+
+    0%,100%{
+
+        text-shadow:
+            0 0 20px
+            rgba(255,80,180,.4),
+            0 0 40px
+            rgba(255,80,180,.2);
+
+        opacity:.9;
+    }
+
+    50%{
+
+        text-shadow:
+            0 0 30px
+            rgba(255,80,180,.6),
+            0 0 60px
+            rgba(255,80,180,.35);
+
+        opacity:1;
+    }
+}
+
+@keyframes splashPulse{
+
+    0%,100%{
+
+        opacity:.4;
+    }
+
+    50%{
+
+        opacity:.7;
+    }
+}
+
+/* ============================= */
+/* INFO                          */
+/* ============================= */
+
+#info{
+
+    position:absolute;
+
+    top:12px;
+    left:14px;
+
+    z-index:20;
+
+    color:
+        rgba(255,110,190,.45);
+
+    font-family:monospace;
+
+    font-size:10px;
+
+    line-height:1.5;
+
+    pointer-events:none;
+}
+
+#performance{
+
+    position:absolute;
+
+    top:12px;
+    right:14px;
+
+    z-index:20;
+
+    color:
+        rgba(255,110,190,.45);
+
+    font-family:monospace;
+
+    font-size:10px;
+
+    pointer-events:none;
+}
+
+#hint{
+
+    position:absolute;
+
+    left:50%;
+    top:50%;
+
+    transform:
+        translate(-50%,-50%);
+
+    color:
+        rgba(255,120,195,.55);
+
+    font-size:13px;
+
+    letter-spacing:2px;
+
+    pointer-events:none;
+
+    transition:
+        opacity .5s;
+}
+
+/* ============================= */
+/* CONTROLS                      */
+/* ============================= */
+
+#controls{
+
+    position:absolute;
+
+    left:0;
+    right:0;
+    bottom:0;
+
+    z-index:30;
+
+    display:flex;
+
+    align-items:center;
+
+    gap:8px;
+
+    padding:
+        9px
+        10px
+        calc(9px + env(safe-area-inset-bottom))
+        10px;
+
+    overflow-x:auto;
+
+    background:
+        linear-gradient(
+            to top,
+            rgba(12,3,12,.98),
+            rgba(12,3,12,.88)
+        );
+
+    border-top:
+        1px solid
+        rgba(255,80,180,.16);
+
+    -webkit-overflow-scrolling:touch;
+
+    scrollbar-width:none;
+}
+
+#controls::-webkit-scrollbar{
+    display:none;
+}
+
+button,
+.fileButton,
+.control{
+
+    height:42px;
+
+    border:
+        1px solid
+        rgba(255,80,180,.20);
+
+    border-radius:12px;
+
+    background:
+        rgba(35,7,31,.82);
+
+    color:
+        rgba(255,190,225,.92);
+
+    flex:0 0 auto;
+}
+
+button,
+.fileButton{
+
+    padding:0 14px;
+
+    display:flex;
+
+    align-items:center;
+
+    justify-content:center;
+
+    font-size:12px;
+
+    font-weight:600;
+}
+
+button:active,
+.fileButton:active{
+
+    transform:scale(.96);
+
+    background:
+        rgba(75,12,60,.95);
+}
+
+.fileButton{
+    cursor:pointer;
+}
+
+.fileButton input{
+    display:none;
+}
+
+.control{
+
+    display:flex;
+
+    align-items:center;
+
+    gap:8px;
+
+    padding:0 10px;
+
+    min-width:185px;
+}
+
+.control span:first-child{
+
+    font-size:9px;
+
+    letter-spacing:1px;
+
+    white-space:nowrap;
+
+    color:
+        rgba(255,160,210,.62);
+}
+
+.control input{
+
+    width:90px;
+
+    margin:0;
+}
+
+.value{
+
+    min-width:40px;
+
+    text-align:right;
+
+    font-family:monospace;
+
+    font-size:10px;
+}
+
+input[type="range"]{
+
+    accent-color:#ff58b7;
+
+    cursor:pointer;
+}
+
+#soundToggle.muted{
+    opacity:.5;
+}
+
+</style>
+
+</head>
+
+<body>
+
+<div id="app">
+
+<canvas id="canvas"></canvas>
+
+<!-- SPLASH SCREEN -->
+<div id="splash">
+
+    <div id="splashTitle">
+        АНТИСТРЕСС<br>ДЛЯ ЮЛЕЧКИ
+    </div>
+
+    <div id="splashSubtitle">
+        НАЖМИТЕ НА ЭКРАН<br>ЧТОБЫ ПРОДОЛЖИТЬ
+    </div>
+
+</div>
+
+<div id="info">
+    0K PARTICLES<br>
+    WAITING
+</div>
+
+<div id="performance">
+    FPS: 0
+</div>
+
+<div id="hint">
+    ЗАГРУЗИ ФОТО
+</div>
+
+<div id="controls">
+
+    <label class="fileButton">
+
+        📁 ФОТО
+
+        <input
+            id="imageInput"
+            type="file"
+            accept="image/*">
+
+    </label>
+
+    <button id="zoomOut">
+        −
+    </button>
+
+    <button id="zoomIn">
+        ＋
+    </button>
+
+    <button id="soundToggle">
+        🔊
+    </button>
+
+    <div class="control">
+
+        <span>
+            ЧАСТИЦЫ
+        </span>
+
+        <input
+            id="particleCount"
+            type="range"
+            min="10000"
+            max="80000"
+            step="5000"
+            value="50000">
+
+        <span
+            class="value"
+            id="particleCountValue">
+            50K
+        </span>
+
+    </div>
+
+    <div class="control">
+
+        <span>
+            РАЗМЕР
+        </span>
+
+        <input
+            id="particleSize"
+            type="range"
+            min="0.5"
+            max="4"
+            step="0.1"
+            value="1.2">
+
+        <span
+            class="value"
+            id="particleSizeValue">
+            1.2
+        </span>
+
+    </div>
+
+    <div class="control">
+
+        <span>
+            МАСШТАБ
+        </span>
+
+        <input
+            id="imageScale"
+            type="range"
+            min="0.4"
+            max="1.6"
+            step="0.01"
+            value="1">
+
+        <span
+            class="value"
+            id="imageScaleValue">
+            1.00
+        </span>
+
+    </div>
+
+    <div class="control">
+
+        <span>
+            ДИНАМИКА
+        </span>
+
+        <input
+            id="motion"
+            type="range"
+            min="0"
+            max="5"
+            step="0.1"
+            value="2.5">
+
+        <span
+            class="value"
+            id="motionValue">
+            2.5
+        </span>
+
+    </div>
+
+    <div class="control">
+
+        <span>
+            ИМПУЛЬС
+        </span>
+
+        <input
+            id="interactionForce"
+            type="range"
+            min="0.5"
+            max="5"
+            step="0.1"
+            value="2.5">
+
+        <span
+            class="value"
+            id="interactionForceValue">
+            2.5
+        </span>
+
+    </div>
+
+</div>
+
+</div>
+
+<script>
+
+"use strict";
+
+/* ============================================================
+   CANVAS
+   ============================================================ */
+
+const canvas =
+    document.getElementById(
+        "canvas"
+    );
+
+const gl =
+    canvas.getContext(
+        "webgl2",
+        {
+
+            alpha:false,
+
+            antialias:false,
+
+            depth:false,
+
+            stencil:false,
+
+            preserveDrawingBuffer:false,
+
+            powerPreference:
+                "high-performance"
+        }
+    );
+
+if(!gl){
+
+    alert(
+        "WebGL2 недоступен."
+    );
+
+    throw new Error(
+        "WebGL2 unavailable"
+    );
+}
+
+/* ============================================================
+   AUDIO SYSTEM
+   ============================================================ */
+
+let audioCtx=null;
+
+let masterGain=null;
+
+let audioUnlocked=false;
+
+let soundEnabled=true;
+
+let noiseBuffer=null;
+
+function initAudio(){
+
+    if(audioCtx){
+        return;
+    }
+
+    try{
+
+        const AC =
+            window.AudioContext ||
+            window.webkitAudioContext;
+
+        if(!AC){
+            return;
+        }
+
+        audioCtx =
+            new AC();
+
+        masterGain =
+            audioCtx.createGain();
+
+        masterGain.gain.value =
+            0.35;
+
+        masterGain.connect(
+            audioCtx.destination
+        );
+
+        const length =
+            audioCtx.sampleRate * 2;
+
+        noiseBuffer =
+            audioCtx.createBuffer(
+                1,
+                length,
+                audioCtx.sampleRate
+            );
+
+        const data =
+            noiseBuffer.getChannelData(
+                0
+            );
+
+        for(
+            let i=0;
+            i<length;
+            i++
+        ){
+
+            data[i] =
+                Math.random() * 2 - 1;
+        }
+
+    }catch(e){
+
+        console.warn(
+            "Audio init failed:",
+            e
+        );
+    }
+}
+
+function unlockAudio(){
+
+    if(audioUnlocked){
+        return;
+    }
+
+    initAudio();
+
+    if(audioCtx){
+
+        if(
+            audioCtx.state ===
+            "suspended"
+        ){
+
+            audioCtx.resume();
+        }
+
+        audioUnlocked=true;
+    }
+}
+
+function setupAudioUnlock(){
+
+    const targets =
+        document.querySelectorAll(
+            "button, .fileButton, input[type=range]"
+        );
+
+    targets.forEach(
+        el=>{
+
+            el.addEventListener(
+                "pointerdown",
+                unlockAudio,
+                {
+                    once:true,
+                    passive:true
+                }
+            );
+        }
+    );
+}
+
+/* ============================================================
+   ARCADE SOUND EFFECTS (8-bit style)
+   ============================================================ */
+
+/*
+   Загрузка фото.
+   
+   Классическая аркадная мелодия —
+   квадратные волны, восходящая гамма.
+   Как в Pac-Man при сборе бонуса.
+*/
+
+function playImageLoadSound(){
+
+    if(
+        !soundEnabled ||
+        !audioCtx
+    ){
+        return;
+    }
+
+    const now =
+        audioCtx.currentTime;
+
+    /*
+       Восходящая пентатоника —
+       характерно для 8-bit музыки.
+    */
+
+    const notes =
+        [
+            261.63,  // C4
+            329.63,  // E4
+            392.00,  // G4
+            523.25   // C5
+        ];
+
+    notes.forEach(
+        (freq, i)=>{
+
+            const osc =
+                audioCtx.createOscillator();
+
+            const gain =
+                audioCtx.createGain();
+
+            /*
+               SQUARE WAVE —
+               классический 8-bit звук.
+            */
+
+            osc.type =
+                "square";
+
+            osc.frequency.value =
+                freq;
+
+            const start =
+                now +
+                i * 0.06;
+
+            /*
+               Очень резкая атака —
+               как в аркадах.
+            */
+
+            gain.gain.setValueAtTime(
+                0,
+                start
+            );
+
+            gain.gain.linearRampToValueAtTime(
+                0.12,
+                start + 0.005
+            );
+
+            /*
+               Короткий decay.
+            */
+
+            gain.gain.exponentialRampToValueAtTime(
+                0.0001,
+                start + 0.15
+            );
+
+            osc.connect(
+                gain
+            );
+
+            gain.connect(
+                masterGain
+            );
+
+            osc.start(
+                start
+            );
+
+            osc.stop(
+                start + 0.18
+            );
+        }
+    );
+}
+
+/*
+   Тик слайдера.
+   
+   Короткий "пик" — квадратная волна.
+   Как звук монетки в аркадах.
+*/
+
+let lastTickTime=0;
+
+function playTickSound(){
+
+    if(
+        !soundEnabled ||
+        !audioCtx
+    ){
+        return;
+    }
+
+    const now =
+        audioCtx.currentTime;
+
+    if(
+        now - lastTickTime <
+        0.05
+    ){
+        return;
+    }
+
+    lastTickTime=now;
+
+    const osc =
+        audioCtx.createOscillator();
+
+    const gain =
+        audioCtx.createGain();
+
+    osc.type =
+        "square";
+
+    osc.frequency.value =
+        880 +
+        Math.random() * 220;
+
+    gain.gain.setValueAtTime(
+        0.08,
+        now
+    );
+
+    gain.gain.exponentialRampToValueAtTime(
+        0.0001,
+        now + 0.03
+    );
+
+    osc.connect(
+        gain
+    );
+
+    gain.connect(
+        masterGain
+    );
+
+    osc.start(
+        now
+    );
+
+    osc.stop(
+        now + 0.04
+    );
+}
+
+/*
+   Zoom in.
+   
+   Быстрый свип вверх на square wave.
+   Как звук прыжка в платформере.
+*/
+
+function playZoomInSound(){
+
+    if(
+        !soundEnabled ||
+        !audioCtx
+    ){
+        return;
+    }
+
+    const now =
+        audioCtx.currentTime;
+
+    const osc =
+        audioCtx.createOscillator();
+
+    const gain =
+        audioCtx.createGain();
+
+    osc.type =
+        "square";
+
+    osc.frequency.setValueAtTime(
+        200,
+        now
+    );
+
+    osc.frequency.exponentialRampToValueAtTime(
+        1200,
+        now + 0.08
+    );
+
+    gain.gain.setValueAtTime(
+        0,
+        now
+    );
+
+    gain.gain.linearRampToValueAtTime(
+        0.15,
+        now + 0.005
+    );
+
+    gain.gain.exponentialRampToValueAtTime(
+        0.0001,
+        now + 0.12
+    );
+
+    osc.connect(
+        gain
+    );
+
+    gain.connect(
+        masterGain
+    );
+
+    osc.start(
+        now
+    );
+
+    osc.stop(
+        now + 0.15
+    );
+}
+
+/*
+   Zoom out.
+   
+   Свип вниз — как звук падения.
+*/
+
+function playZoomOutSound(){
+
+    if(
+        !soundEnabled ||
+        !audioCtx
+    ){
+        return;
+    }
+
+    const now =
+        audioCtx.currentTime;
+
+    const osc =
+        audioCtx.createOscillator();
+
+    const gain =
+        audioCtx.createGain();
+
+    osc.type =
+        "square";
+
+    osc.frequency.setValueAtTime(
+        1200,
+        now
+    );
+
+    osc.frequency.exponentialRampToValueAtTime(
+        200,
+        now + 0.08
+    );
+
+    gain.gain.setValueAtTime(
+        0,
+        now
+    );
+
+    gain.gain.linearRampToValueAtTime(
+        0.15,
+        now + 0.005
+    );
+
+    gain.gain.exponentialRampToValueAtTime(
+        0.0001,
+        now + 0.12
+    );
+
+    osc.connect(
+        gain
+    );
+
+    gain.connect(
+        masterGain
+    );
+
+    osc.start(
+        now
+    );
+
+    osc.stop(
+        now + 0.15
+    );
+}
+
+/*
+   Whoosh при взаимодействии.
+   
+   Серия быстрых пиков — как звук
+   попадания в Space Invaders.
+   Интенсивность определяет количество пиков.
+*/
+
+let lastWhooshTime=0;
+
+function playWhooshSound(
+    intensity
+){
+
+    if(
+        !soundEnabled ||
+        !audioCtx
+    ){
+        return;
+    }
+
+    const now =
+        audioCtx.currentTime;
+
+    if(
+        now - lastWhooshTime <
+        0.1
+    ){
+        return;
+    }
+
+    lastWhooshTime=now;
+
+    /*
+       Количество пиков зависит
+       от интенсивности (1-4).
+    */
+
+    const numBeeps =
+        Math.min(
+            4,
+            Math.floor(
+                1 +
+                intensity * 3
+            )
+        );
+
+    for(
+        let i=0;
+        i<numBeeps;
+        i++
+    ){
+
+        const osc =
+            audioCtx.createOscillator();
+
+        const gain =
+            audioCtx.createGain();
+
+        osc.type =
+            "square";
+
+        /*
+           Частота растёт с каждым пиком —
+           создаёт "восходящий" эффект.
+        */
+
+        const baseFreq =
+            400 +
+            intensity * 300;
+
+        osc.frequency.value =
+            baseFreq +
+            i * 150;
+
+        const start =
+            now +
+            i * 0.025;
+
+        gain.gain.setValueAtTime(
+            0,
+            start
+        );
+
+        gain.gain.linearRampToValueAtTime(
+            0.1,
+            start + 0.003
+        );
+
+        gain.gain.exponentialRampToValueAtTime(
+            0.0001,
+            start + 0.04
+        );
+
+        osc.connect(
+            gain
+        );
+
+        gain.connect(
+            masterGain
+        );
+
+        osc.start(
+            start
+        );
+
+        osc.stop(
+            start + 0.05
+        );
+    }
+}
+
+/* ============================================================
+   STATE
+   ============================================================ */
+
+const state = {
+
+    particles:50000,
+
+    particleSize:1.2,
+
+    imageScale:1,
+
+    zoom:1,
+
+    force:2.5,
+
+    motion:2.5,
+
+    width:1,
+
+    height:1,
+
+    centerX:0,
+
+    centerY:0,
+
+    imageLoaded:false
+};
+
+let currentImage=null;
+
+/* ============================================================
+   SHADERS
+   ============================================================ */
+
+const vertexShaderSource = `#version 300 es
+
+precision highp float;
+
+in vec2 a_position;
+
+in float a_size;
+
+in vec4 a_color;
+
+uniform vec2 u_resolution;
+
+uniform float u_zoom;
+
+uniform float u_particleSize;
+
+out vec4 v_color;
+
+void main(){
+
+    float cx =
+        u_resolution.x * 0.5;
+
+    float cy =
+        u_resolution.y * 0.5;
+
+    float x =
+        cx +
+        (a_position.x - cx)
+        * u_zoom;
+
+    float y =
+        cy +
+        (a_position.y - cy)
+        * u_zoom;
+
+    vec2 normalized =
+        vec2(
+            x / u_resolution.x,
+            y / u_resolution.y
+        );
+
+    vec2 clip =
+        normalized * 2.0 - 1.0;
+
+    gl_Position =
+        vec4(
+            clip.x,
+            -clip.y,
+            0.0,
+            1.0
+        );
+
+    gl_PointSize =
+        max(
+            1.0,
+            a_size *
+            u_particleSize *
+            u_zoom
+        );
+
+    v_color =
+        a_color;
+}
+`;
+
+const fragmentShaderSource = `#version 300 es
+
+precision mediump float;
+
+in vec4 v_color;
+
+out vec4 outColor;
+
+void main(){
+
+    vec2 p =
+        gl_PointCoord -
+        vec2(0.5);
+
+    float distanceFromCenter =
+        length(p);
+
+    if(
+        distanceFromCenter >
+        0.5
+    ){
+
+        discard;
+    }
+
+    float alpha =
+        smoothstep(
+            0.5,
+            0.32,
+            distanceFromCenter
+        );
+
+    outColor =
+        vec4(
+            v_color.rgb,
+            v_color.a *
+            alpha
+        );
+}
+`;
+
+/* ============================================================
+   SHADER COMPILE
+   ============================================================ */
+
+function createShader(
+    type,
+    source
+){
+
+    const shader =
+        gl.createShader(
+            type
+        );
+
+    gl.shaderSource(
+        shader,
+        source
+    );
+
+    gl.compileShader(
+        shader
+    );
+
+    if(
+        !gl.getShaderParameter(
+            shader,
+            gl.COMPILE_STATUS
+        )
+    ){
+
+        throw new Error(
+            gl.getShaderInfoLog(
+                shader
+            )
+        );
+    }
+
+    return shader;
+}
+
+const program =
+    gl.createProgram();
+
+gl.attachShader(
+    program,
+    createShader(
+        gl.VERTEX_SHADER,
+        vertexShaderSource
+    )
+);
+
+gl.attachShader(
+    program,
+    createShader(
+        gl.FRAGMENT_SHADER,
+        fragmentShaderSource
+    )
+);
+
+gl.linkProgram(
+    program
+);
+
+if(
+    !gl.getProgramParameter(
+        program,
+        gl.LINK_STATUS
+    )
+){
+
+    throw new Error(
+        gl.getProgramInfoLog(
+            program
+        )
+    );
+}
+
+gl.useProgram(
+    program
+);
+
+/* ============================================================
+   BLENDING
+   ============================================================ */
+
+gl.enable(
+    gl.BLEND
+);
+
+gl.blendFunc(
+    gl.SRC_ALPHA,
+    gl.ONE_MINUS_SRC_ALPHA
+);
+
+/* ============================================================
+   LOCATIONS
+   ============================================================ */
+
+const positionLocation =
+    gl.getAttribLocation(
+        program,
+        "a_position"
+    );
+
+const sizeLocation =
+    gl.getAttribLocation(
+        program,
+        "a_size"
+    );
+
+const colorLocation =
+    gl.getAttribLocation(
+        program,
+        "a_color"
+    );
+
+const resolutionLocation =
+    gl.getUniformLocation(
+        program,
+        "u_resolution"
+    );
+
+const zoomLocation =
+    gl.getUniformLocation(
+        program,
+        "u_zoom"
+    );
+
+const particleSizeLocation =
+    gl.getUniformLocation(
+        program,
+        "u_particleSize"
+    );
+
+/* ============================================================
+   GPU BUFFERS
+   ============================================================ */
+
+const positionBuffer =
+    gl.createBuffer();
+
+const sizeBuffer =
+    gl.createBuffer();
+
+const colorBuffer =
+    gl.createBuffer();
+
+/* ============================================================
+   PARTICLES
+   ============================================================ */
+
+let x;
+let y;
+
+let vx;
+let vy;
+
+let targetX;
+let targetY;
+
+let phase;
+
+let motionAmount;
+
+let particleSizes;
+
+let particleColors;
+
+let renderPositions;
+
+let baseTargetX=null;
+
+let baseTargetY=null;
+
+/* ============================================================
+   SPATIAL GRID
+   ============================================================ */
+
+const CELL_SIZE=48;
+
+let gridColumns=1;
+
+let gridRows=1;
+
+let gridHeads;
+
+let gridNext;
+
+/* ============================================================
+   IMAGE
+   ============================================================ */
+
+const imageCanvas =
+    document.createElement(
+        "canvas"
+    );
+
+const imageContext =
+    imageCanvas.getContext(
+        "2d",
+        {
+            willReadFrequently:true
+        }
+    );
+
+/* ============================================================
+   ALLOCATE
+   ============================================================ */
+
+function allocateParticles(
+    count
+){
+
+    state.particles=count;
+
+    x=
+        new Float32Array(
+            count
+        );
+
+    y=
+        new Float32Array(
+            count
+        );
+
+    vx=
+        new Float32Array(
+            count
+        );
+
+    vy=
+        new Float32Array(
+            count
+        );
+
+    targetX=
+        new Float32Array(
+            count
+        );
+
+    targetY=
+        new Float32Array(
+            count
+        );
+
+    phase=
+        new Float32Array(
+            count
+        );
+
+    motionAmount=
+        new Float32Array(
+            count
+        );
+
+    particleSizes=
+        new Float32Array(
+            count
+        );
+
+    particleColors=
+        new Float32Array(
+            count * 4
+        );
+
+    renderPositions=
+        new Float32Array(
+            count * 2
+        );
+
+    gridNext=
+        new Int32Array(
+            count
+        );
+
+    gl.bindBuffer(
+        gl.ARRAY_BUFFER,
+        positionBuffer
+    );
+
+    gl.bufferData(
+        gl.ARRAY_BUFFER,
+        count * 2 * 4,
+        gl.DYNAMIC_DRAW
+    );
+
+    gl.bindBuffer(
+        gl.ARRAY_BUFFER,
+        sizeBuffer
+    );
+
+    gl.bufferData(
+        gl.ARRAY_BUFFER,
+        particleSizes,
+        gl.STATIC_DRAW
+    );
+
+    gl.bindBuffer(
+        gl.ARRAY_BUFFER,
+        colorBuffer
+    );
+
+    gl.bufferData(
+        gl.ARRAY_BUFFER,
+        particleColors,
+        gl.STATIC_DRAW
+    );
+
+    baseTargetX=null;
+    baseTargetY=null;
+}
+
+/* ============================================================
+   GRID
+   ============================================================ */
+
+function resizeGrid(){
+
+    gridColumns =
+        Math.ceil(
+            state.width /
+            CELL_SIZE
+        ) + 2;
+
+    gridRows =
+        Math.ceil(
+            state.height /
+            CELL_SIZE
+        ) + 2;
+
+    gridHeads =
+        new Int32Array(
+            gridColumns *
+            gridRows
+        );
+
+    gridHeads.fill(-1);
+}
+
+function buildGrid(){
+
+    gridHeads.fill(-1);
+
+    const count =
+        state.particles;
+
+    for(
+        let i=0;
+        i<count;
+        i++
+    ){
+
+        const cx =
+            Math.floor(
+                x[i] /
+                CELL_SIZE
+            );
+
+        const cy =
+            Math.floor(
+                y[i] /
+                CELL_SIZE
+            );
+
+        if(
+            cx<0 ||
+            cy<0 ||
+            cx>=gridColumns ||
+            cy>=gridRows
+        ){
+
+            gridNext[i]=-1;
+
+            continue;
+        }
+
+        const index =
+            cy *
+            gridColumns +
+            cx;
+
+        gridNext[i]=
+            gridHeads[index];
+
+        gridHeads[index]=i;
+    }
+}
+
+/* ============================================================
+   IMAGE SIZE
+   ============================================================ */
+
+function calculateImageSize(
+    imageWidth,
+    imageHeight
+){
+
+    const aspect =
+        imageWidth /
+        imageHeight;
+
+    const maxWidth =
+        state.width *
+        0.78;
+
+    const maxHeight =
+        state.height *
+        0.78;
+
+    let width=
+        maxWidth;
+
+    let height=
+        width /
+        aspect;
+
+    if(
+        height >
+        maxHeight
+    ){
+
+        height=
+            maxHeight;
+
+        width=
+            height *
+            aspect;
+    }
+
+    return{
+        width,
+        height
+    };
+}
+
+/* ============================================================
+   CREATE IMAGE
+   ============================================================ */
+
+function createParticleImage(
+    image
+){
+
+    const dimensions =
+        calculateImageSize(
+            image.naturalWidth,
+            image.naturalHeight
+        );
+
+    const imageWidth =
+        dimensions.width;
+
+    const imageHeight =
+        dimensions.height;
+
+    const sampleWidth =
+        Math.min(
+            1000,
+            Math.max(
+                400,
+                Math.round(
+                    imageWidth
+                )
+            )
+        );
+
+    const sampleHeight =
+        Math.max(
+            1,
+            Math.round(
+                sampleWidth *
+                image.naturalHeight /
+                image.naturalWidth
+            )
+        );
+
+    imageCanvas.width=
+        sampleWidth;
+
+    imageCanvas.height=
+        sampleHeight;
+
+    imageContext.clearRect(
+        0,
+        0,
+        sampleWidth,
+        sampleHeight
+    );
+
+    imageContext.drawImage(
+        image,
+        0,
+        0,
+        sampleWidth,
+        sampleHeight
+    );
+
+    const pixels =
+        imageContext.getImageData(
+            0,
+            0,
+            sampleWidth,
+            sampleHeight
+        ).data;
+
+    const count=
+        state.particles;
+
+    const aspect =
+        imageWidth /
+        imageHeight;
+
+    const columns =
+        Math.max(
+            1,
+            Math.round(
+                Math.sqrt(
+                    count *
+                    aspect
+                )
+            )
+        );
+
+    const rows =
+        Math.ceil(
+            count /
+            columns
+        );
+
+    const left =
+        state.centerX -
+        imageWidth / 2;
+
+    const top =
+        state.centerY -
+        imageHeight / 2;
+
+    for(
+        let i=0;
+        i<count;
+        i++
+    ){
+
+        const column =
+            i % columns;
+
+        const row =
+            Math.floor(
+                i /
+                columns
+            );
+
+        const u =
+            (
+                column +
+                0.5
+            ) /
+            columns;
+
+        const v =
+            (
+                row +
+                0.5
+            ) /
+            rows;
+
+        const pixelX =
+            Math.min(
+                sampleWidth-1,
+                Math.floor(
+                    u *
+                    sampleWidth
+                )
+            );
+
+        const pixelY =
+            Math.min(
+                sampleHeight-1,
+                Math.floor(
+                    v *
+                    sampleHeight
+                )
+            );
+
+        const pixelIndex =
+            (
+                pixelY *
+                sampleWidth +
+                pixelX
+            ) * 4;
+
+        const red =
+            pixels[
+                pixelIndex
+            ];
+
+        const green =
+            pixels[
+                pixelIndex+1
+            ];
+
+        const blue =
+            pixels[
+                pixelIndex+2
+            ];
+
+        const brightness =
+            (
+                red*.2126 +
+                green*.7152 +
+                blue*.0722
+            ) / 255;
+
+        const px =
+            left +
+            u *
+            imageWidth;
+
+        const py =
+            top +
+            v *
+            imageHeight;
+
+        targetX[i]=px;
+        targetY[i]=py;
+
+        x[i]=px;
+        y[i]=py;
+
+        vx[i]=0;
+        vy[i]=0;
+
+        phase[i]=
+            Math.random() *
+            Math.PI *
+            2;
+
+        motionAmount[i]=
+            .7 +
+            Math.random() *
+            .6;
+
+        particleColors[
+            i*4
+        ]=1.0;
+
+        particleColors[
+            i*4+1
+        ]=
+            .075 +
+            brightness*.40;
+
+        particleColors[
+            i*4+2
+        ]=
+            .25 +
+            brightness*.58;
+
+        particleColors[
+            i*4+3
+        ]=
+            .55 +
+            brightness*.45;
+
+        particleSizes[i]=
+            .85 +
+            brightness*.25;
+    }
+
+    baseTargetX=
+        new Float32Array(
+            targetX
+        );
+
+    baseTargetY=
+        new Float32Array(
+            targetY
+        );
+
+    gl.bindBuffer(
+        gl.ARRAY_BUFFER,
+        sizeBuffer
+    );
+
+    gl.bufferData(
+        gl.ARRAY_BUFFER,
+        particleSizes,
+        gl.STATIC_DRAW
+    );
+
+    gl.bindBuffer(
+        gl.ARRAY_BUFFER,
+        colorBuffer
+    );
+
+    gl.bufferData(
+        gl.ARRAY_BUFFER,
+        particleColors,
+        gl.STATIC_DRAW
+    );
+
+    state.imageLoaded=true;
+
+    document
+        .getElementById(
+            "hint"
+        )
+        .style.opacity="0";
+
+    playImageLoadSound();
+}
+
+/* ============================================================
+   SCALE
+   ============================================================ */
+
+function applyImageScale(){
+
+    if(
+        !state.imageLoaded ||
+        !baseTargetX
+    ){
+
+        return;
+    }
+
+    const scale =
+        state.imageScale;
+
+    const cx =
+        state.centerX;
+
+    const cy =
+        state.centerY;
+
+    for(
+        let i=0;
+        i<state.particles;
+        i++
+    ){
+
+        targetX[i]=
+            cx +
+            (
+                baseTargetX[i] -
+                cx
+            ) *
+            scale;
+
+        targetY[i]=
+            cy +
+            (
+                baseTargetY[i] -
+                cy
+            ) *
+            scale;
+    }
+}
+
+/* ============================================================
+   SCREEN → WORLD
+   ============================================================ */
+
+function screenToWorld(
+    sx,
+    sy
+){
+
+    const cx=
+        state.width/2;
+
+    const cy=
+        state.height/2;
+
+    return{
+
+        x:
+            cx +
+            (
+                sx-cx
+            ) /
+            state.zoom,
+
+        y:
+            cy +
+            (
+                sy-cy
+            ) /
+            state.zoom
+    };
+}
+
+/* ============================================================
+   TOUCHES
+   ============================================================ */
+
+const activeTouches=
+    new Map();
+
+const touchPrevPos =
+    new Map();
+
+function pointerDown(
+    event
+){
+
+    if(
+        event.target !==
+        canvas
+    ){
+
+        return;
+    }
+
+    const rect=
+        canvas.getBoundingClientRect();
+
+    const sx=
+        event.clientX -
+        rect.left;
+
+    const sy=
+        event.clientY -
+        rect.top;
+
+    const world=
+        screenToWorld(
+            sx,
+            sy
+        );
+
+    activeTouches.set(
+        event.pointerId,
+        {
+
+            x:world.x,
+
+            y:world.y
+
+        }
+    );
+
+    touchPrevPos.set(
+        event.pointerId,
+        {
+            x:world.x,
+            y:world.y
+        }
+    );
+
+    canvas.setPointerCapture?.(
+        event.pointerId
+    );
+
+    event.preventDefault();
+}
+
+function pointerMove(
+    event
+){
+
+    const touch=
+        activeTouches.get(
+            event.pointerId
+        );
+
+    if(!touch){
+        return;
+    }
+
+    const rect=
+        canvas.getBoundingClientRect();
+
+    const sx=
+        event.clientX -
+        rect.left;
+
+    const sy=
+        event.clientY -
+        rect.top;
+
+    const world=
+        screenToWorld(
+            sx,
+            sy
+        );
+
+    touch.x=
+        world.x;
+
+    touch.y=
+        world.y;
+
+    event.preventDefault();
+}
+
+function pointerUp(
+    event
+){
+
+    activeTouches.delete(
+        event.pointerId
+    );
+
+    touchPrevPos.delete(
+        event.pointerId
+    );
+
+    event.preventDefault();
+}
+
+canvas.addEventListener(
+    "pointerdown",
+    pointerDown,
+    {
+        passive:false
+    }
+);
+
+canvas.addEventListener(
+    "pointermove",
+    pointerMove,
+    {
+        passive:false
+    }
+);
+
+canvas.addEventListener(
+    "pointerup",
+    pointerUp,
+    {
+        passive:false
+    }
+);
+
+canvas.addEventListener(
+    "pointercancel",
+    pointerUp,
+    {
+        passive:false
+    }
+);
+
+/* ============================================================
+   PARTICLE INTERACTION
+   ============================================================ */
+
+function interactWithTouch(
+    touch,
+    dt,
+    pointerId
+){
+
+    const radius=
+        55 /
+        state.zoom;
+
+    const radiusSquared=
+        radius *
+        radius;
+
+    const minCellX=
+        Math.floor(
+            (
+                touch.x-radius
+            ) /
+            CELL_SIZE
+        );
+
+    const maxCellX=
+        Math.floor(
+            (
+                touch.x+radius
+            ) /
+            CELL_SIZE
+        );
+
+    const minCellY=
+        Math.floor(
+            (
+                touch.y-radius
+            ) /
+            CELL_SIZE
+        );
+
+    const maxCellY=
+        Math.floor(
+            (
+                touch.y+radius
+            ) /
+            CELL_SIZE
+        );
+
+    const force=
+        state.force *
+        dt *
+        260;
+
+    let hitCount=0;
+
+    for(
+        let cy=minCellY;
+        cy<=maxCellY;
+        cy++
+    ){
+
+        if(
+            cy<0 ||
+            cy>=gridRows
+        ){
+
+            continue;
+        }
+
+        for(
+            let cx=minCellX;
+            cx<=maxCellX;
+            cx++
+        ){
+
+            if(
+                cx<0 ||
+                cx>=gridColumns
+            ){
+
+                continue;
+            }
+
+            const cellIndex=
+                cy *
+                gridColumns +
+                cx;
+
+            let particle=
+                gridHeads[
+                    cellIndex
+                ];
+
+            while(
+                particle!==-1
+            ){
+
+                const dx=
+                    x[particle] -
+                    touch.x;
+
+                const dy=
+                    y[particle] -
+                    touch.y;
+
+                const distanceSquared=
+                    dx*dx +
+                    dy*dy;
+
+                if(
+                    distanceSquared <
+                    radiusSquared
+                ){
+
+                    let distance=
+                        Math.sqrt(
+                            distanceSquared
+                        );
+
+                    if(
+                        distance<0.001
+                    ){
+
+                        distance=0.001;
+                    }
+
+                    const nx=
+                        dx/distance;
+
+                    const ny=
+                        dy/distance;
+
+                    const falloff=
+                        1 -
+                        distance/radius;
+
+                    const impulse=
+                        force *
+                        (
+                            .25 +
+                            falloff*
+                            falloff*
+                            2.8
+                        );
+
+                    vx[particle]+=
+                        nx *
+                        impulse;
+
+                    vy[particle]+=
+                        ny *
+                        impulse;
+
+                    hitCount++;
+                }
+
+                particle=
+                    gridNext[
+                        particle
+                    ];
+            }
+        }
+    }
+
+    if(hitCount > 5){
+
+        const prev =
+            touchPrevPos.get(
+                pointerId
+            );
+
+        let speed=0;
+
+        if(prev){
+
+            const dx =
+                touch.x -
+                prev.x;
+
+            const dy =
+                touch.y -
+                prev.y;
+
+            speed =
+                Math.sqrt(
+                    dx*dx +
+                    dy*dy
+                );
+        }
+
+        const intensity =
+            Math.min(
+                1,
+                hitCount / 80 +
+                speed / 120
+            );
+
+        playWhooshSound(
+            intensity
+        );
+
+        touchPrevPos.set(
+            pointerId,
+            {
+                x:touch.x,
+                y:touch.y
+            }
+        );
+    }
+}
+
+/* ============================================================
+   PHYSICS
+   ============================================================ */
+
+function updatePhysics(
+    time
+){
+
+    const dt=
+        Math.min(
+            .032,
+            (
+                time -
+                lastFrameTime
+            )/1000
+        );
+
+    if(
+        activeTouches.size>0
+    ){
+
+        buildGrid();
+
+        activeTouches.forEach(
+            (touch, pointerId)=>{
+
+                interactWithTouch(
+                    touch,
+                    dt,
+                    pointerId
+                );
+
+            }
+        );
+    }
+
+    const count=
+        state.particles;
+
+    const spring=.014;
+
+    const damping=.91;
+
+    const organicStrength=
+        state.motion *
+        .004;
+
+    const timeSeconds=
+        time/1000;
+
+    for(
+        let i=0;
+        i<count;
+        i++
+    ){
+
+        const dx=
+            targetX[i] -
+            x[i];
+
+        const dy=
+            targetY[i] -
+            y[i];
+
+        vx[i]+=
+            dx *
+            spring;
+
+        vy[i]+=
+            dy *
+            spring;
+
+        if(
+            state.motion>0
+        ){
+
+            const organicX=
+                Math.sin(
+                    timeSeconds *
+                    (
+                        2.0 +
+                        state.motion*.7
+                    ) +
+                    phase[i]
+                );
+
+            const organicY=
+                Math.cos(
+                    timeSeconds *
+                    (
+                        1.7 +
+                        state.motion*.55
+                    ) +
+                    phase[i]*1.37
+                );
+
+            vx[i]+=
+                organicX *
+                motionAmount[i] *
+                organicStrength;
+
+            vy[i]+=
+                organicY *
+                motionAmount[i] *
+                organicStrength;
+        }
+
+        vx[i]*=
+            damping;
+
+        vy[i]*=
+            damping;
+
+        const maxSpeed=24;
+
+        const speedSquared=
+            vx[i]*vx[i] +
+            vy[i]*vy[i];
+
+        if(
+            speedSquared >
+            maxSpeed*maxSpeed
+        ){
+
+            const scale=
+                maxSpeed /
+                Math.sqrt(
+                    speedSquared
+                );
+
+            vx[i]*=scale;
+
+            vy[i]*=scale;
+        }
+
+        x[i]+=vx[i];
+
+        y[i]+=vy[i];
+    }
+}
+
+/* ============================================================
+   RENDER
+   ============================================================ */
+
+function render(){
+
+    const count=
+        state.particles;
+
+    for(
+        let i=0,j=0;
+        i<count;
+        i++,j+=2
+    ){
+
+        renderPositions[j]=x[i];
+
+        renderPositions[j+1]=y[i];
+    }
+
+    gl.viewport(
+        0,
+        0,
+        canvas.width,
+        canvas.height
+    );
+
+    gl.clearColor(
+        0,
+        0,
+        0,
+        1
+    );
+
+    gl.clear(
+        gl.COLOR_BUFFER_BIT
+    );
+
+    gl.useProgram(
+        program
+    );
+
+    gl.bindBuffer(
+        gl.ARRAY_BUFFER,
+        positionBuffer
+    );
+
+    gl.bufferSubData(
+        gl.ARRAY_BUFFER,
+        0,
+        renderPositions
+    );
+
+    gl.enableVertexAttribArray(
+        positionLocation
+    );
+
+    gl.vertexAttribPointer(
+        positionLocation,
+        2,
+        gl.FLOAT,
+        false,
+        0,
+        0
+    );
+
+    gl.bindBuffer(
+        gl.ARRAY_BUFFER,
+        sizeBuffer
+    );
+
+    gl.enableVertexAttribArray(
+        sizeLocation
+    );
+
+    gl.vertexAttribPointer(
+        sizeLocation,
+        1,
+        gl.FLOAT,
+        false,
+        0,
+        0
+    );
+
+    gl.bindBuffer(
+        gl.ARRAY_BUFFER,
+        colorBuffer
+    );
+
+    gl.enableVertexAttribArray(
+        colorLocation
+    );
+
+    gl.vertexAttribPointer(
+        colorLocation,
+        4,
+        gl.FLOAT,
+        false,
+        0,
+        0
+    );
+
+    gl.uniform2f(
+        resolutionLocation,
+        state.width,
+        state.height
+    );
+
+    gl.uniform1f(
+        zoomLocation,
+        state.zoom
+    );
+
+    gl.uniform1f(
+        particleSizeLocation,
+        state.particleSize
+    );
+
+    gl.drawArrays(
+        gl.POINTS,
+        0,
+        count
+    );
+}
+
+/* ============================================================
+   RESIZE
+   ============================================================ */
+
+function resize(){
+
+    const oldCenterX=
+        state.centerX;
+
+    const oldCenterY=
+        state.centerY;
+
+    const rect=
+        canvas.getBoundingClientRect();
+
+    state.width=
+        rect.width;
+
+    state.height=
+        rect.height;
+
+    state.centerX=
+        state.width/2;
+
+    state.centerY=
+        state.height/2;
+
+    const dx=
+        state.centerX -
+        oldCenterX;
+
+    const dy=
+        state.centerY -
+        oldCenterY;
+
+    if(
+        state.imageLoaded
+    ){
+
+        for(
+            let i=0;
+            i<state.particles;
+            i++
+        ){
+
+            x[i]+=dx;
+
+            y[i]+=dy;
+
+            targetX[i]+=dx;
+
+            targetY[i]+=dy;
+
+            if(baseTargetX){
+
+                baseTargetX[i]+=dx;
+
+                baseTargetY[i]+=dy;
+            }
+        }
+    }
+
+    const dpr=
+        Math.min(
+            window.devicePixelRatio||1,
+            1.5
+        );
+
+    canvas.width=
+        Math.round(
+            state.width*dpr
+        );
+
+    canvas.height=
+        Math.round(
+            state.height*dpr
+        );
+
+    resizeGrid();
+}
+
+window.addEventListener(
+    "resize",
+    resize
+);
+
+window.addEventListener(
+    "orientationchange",
+    ()=>{
+
+        setTimeout(
+            resize,
+            150
+        );
+
+    }
+);
+
+/* ============================================================
+   IMAGE INPUT
+   ============================================================ */
+
+document
+.getElementById(
+    "imageInput"
+)
+.addEventListener(
+    "change",
+    event=>{
+
+        const file=
+            event.target
+            .files[0];
+
+        if(!file){
+            return;
+        }
+
+        const url=
+            URL.createObjectURL(
+                file
+            );
+
+        const image=
+            new Image();
+
+        image.onload=()=>{
+
+            currentImage=
+                image;
+
+            createParticleImage(
+                image
+            );
+
+            URL.revokeObjectURL(
+                url
+            );
+        };
+
+        image.src=url;
+    }
+);
+
+/* ============================================================
+   PARTICLE COUNT
+   ============================================================ */
+
+document
+.getElementById(
+    "particleCount"
+)
+.addEventListener(
+    "input",
+    event=>{
+
+        const count=
+            Number(
+                event.target.value
+            );
+
+        document
+        .getElementById(
+            "particleCountValue"
+        )
+        .textContent=
+            Math.round(
+                count/1000
+            )+"K";
+
+        allocateParticles(
+            count
+        );
+
+        if(currentImage){
+
+            createParticleImage(
+                currentImage
+            );
+        }
+
+        playTickSound();
+    }
+);
+
+/* ============================================================
+   PARTICLE SIZE
+   ============================================================ */
+
+document
+.getElementById(
+    "particleSize"
+)
+.addEventListener(
+    "input",
+    event=>{
+
+        state.particleSize=
+            Number(
+                event.target.value
+            );
+
+        document
+        .getElementById(
+            "particleSizeValue"
+        )
+        .textContent=
+            state.particleSize
+            .toFixed(1);
+
+        playTickSound();
+    }
+);
+
+/* ============================================================
+   IMAGE SCALE
+   ============================================================ */
+
+document
+.getElementById(
+    "imageScale"
+)
+.addEventListener(
+    "input",
+    event=>{
+
+        state.imageScale=
+            Number(
+                event.target.value
+            );
+
+        document
+        .getElementById(
+            "imageScaleValue"
+        )
+        .textContent=
+            state.imageScale
+            .toFixed(2);
+
+        applyImageScale();
+
+        playTickSound();
+    }
+);
+
+/* ============================================================
+   DYNAMIC MOTION
+   ============================================================ */
+
+document
+.getElementById(
+    "motion"
+)
+.addEventListener(
+    "input",
+    event=>{
+
+        state.motion=
+            Number(
+                event.target.value
+            );
+
+        document
+        .getElementById(
+            "motionValue"
+        )
+        .textContent=
+            state.motion
+            .toFixed(1);
+
+        playTickSound();
+    }
+);
+
+/* ============================================================
+   INTERACTION FORCE
+   ============================================================ */
+
+document
+.getElementById(
+    "interactionForce"
+)
+.addEventListener(
+    "input",
+    event=>{
+
+        state.force=
+            Number(
+                event.target.value
+            );
+
+        document
+        .getElementById(
+            "interactionForceValue"
+        )
+        .textContent=
+            state.force
+            .toFixed(1);
+
+        playTickSound();
+    }
+);
+
+/* ============================================================
+   ZOOM
+   ============================================================ */
+
+document
+.getElementById(
+    "zoomIn"
+)
+.addEventListener(
+    "click",
+    ()=>{
+
+        state.zoom=
+            Math.min(
+                8,
+                state.zoom*1.2
+            );
+
+        playZoomInSound();
+    }
+);
+
+document
+.getElementById(
+    "zoomOut"
+)
+.addEventListener(
+    "click",
+    ()=>{
+
+        state.zoom=
+            Math.max(
+                .5,
+                state.zoom/1.2
+            );
+
+        playZoomOutSound();
+    }
+);
+
+/* ============================================================
+   SOUND TOGGLE
+   ============================================================ */
+
+const soundToggleBtn =
+    document.getElementById(
+        "soundToggle"
+    );
+
+soundToggleBtn.addEventListener(
+    "click",
+    ()=>{
+
+        unlockAudio();
+
+        soundEnabled =
+            !soundEnabled;
+
+        soundToggleBtn.textContent =
+            soundEnabled
+                ? "🔊"
+                : "🔇";
+
+        if(soundEnabled){
+
+            soundToggleBtn.classList.remove(
+                "muted"
+            );
+        }else{
+
+            soundToggleBtn.classList.add(
+                "muted"
+            );
+        }
+    }
+);
+
+/* ============================================================
+   SPLASH SCREEN
+   ============================================================ */
+
+const splash =
+    document.getElementById(
+        "splash"
+    );
+
+function dismissSplash(){
+
+    splash.classList.add(
+        "hidden"
+    );
+
+    unlockAudio();
+
+    splash.removeEventListener(
+        "pointerdown",
+        dismissSplash
+    );
+
+    splash.removeEventListener(
+        "keydown",
+        dismissSplash
+    );
+}
+
+splash.addEventListener(
+    "pointerdown",
+    dismissSplash,
+    {
+        passive:true
+    }
+);
+
+splash.addEventListener(
+    "keydown",
+    dismissSplash,
+    {
+        passive:true
+    }
+);
+
+/* ============================================================
+   FPS
+   ============================================================ */
+
+let lastFrameTime=
+    performance.now();
+
+let fpsCounter=0;
+
+let fpsTimer=
+    performance.now();
+
+/* ============================================================
+   LOOP
+   ============================================================ */
+
+function animationLoop(
+    currentTime
+){
+
+    updatePhysics(
+        currentTime
+    );
+
+    render();
+
+    fpsCounter++;
+
+    if(
+        currentTime-fpsTimer >
+        300
+    ){
+
+        const fps=
+            fpsCounter /
+            (
+                (
+                    currentTime -
+                    fpsTimer
+                )/1000
+            );
+
+        document
+        .getElementById(
+            "performance"
+        )
+        .textContent=
+            "FPS: "+
+            Math.round(fps);
+
+        document
+        .getElementById(
+            "info"
+        )
+        .innerHTML=
+            Math.round(
+                state.particles/1000
+            )+
+            "K PARTICLES<br>"+
+            (
+                state.imageLoaded
+                ?"FORMED"
+                :"WAITING"
+            )+
+            "<br>"+
+            "ZOOM: "+
+            state.zoom.toFixed(2)+
+            "x";
+
+        fpsCounter=0;
+
+        fpsTimer=
+            currentTime;
+    }
+
+    lastFrameTime=
+        currentTime;
+
+    requestAnimationFrame(
+        animationLoop
+    );
+}
+
+/* ============================================================
+   START
+   ============================================================ */
+
+allocateParticles(
+    state.particles
+);
+
+resize();
+
+setupAudioUnlock();
+
+requestAnimationFrame(
+    animationLoop
+);
+
+</script>
+
+</body>
+
+</html>
